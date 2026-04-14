@@ -7,17 +7,41 @@ import { supabase } from '../../lib/supabase';
 
 // Quick-stat cards
 const stats = [
-  { label: 'Models Trained', value: '3', icon: '🤖' },
-  { label: 'Datasets Loaded', value: '7', icon: '📦' },
-  { label: 'Accuracy Score', value: '94%', icon: '🎯' },
-  { label: 'Hours of Training', value: '12', icon: '⏱️' },
+  { 
+    label: 'The Data Principle', 
+    value: 'The best programs are written so that computing machines can perform them quickly and so that human beings can understand them clearly.' 
+  },
+  { 
+    label: 'The Goal of AI', 
+    value: 'The goal of machine learning is not to recreate the human mind, but to build tools that expand the reach of our own intelligence.' 
+  },
+  { 
+    label: 'Data vs. Information', 
+    value: 'Information is the oil of the 21st century, and analytics is the combustion engine that turns data into value.' 
+  },
+  { 
+    label: 'Continuous Learning', 
+    value: 'In machine learning, failure is just a data point. Every error is an opportunity for the model to refine its understanding.' 
+  },
 ];
 
-// Resource links
+// Resource 
 const resources = [
-  { title: 'Neural Networks 101', tag: 'Beginner', icon: '🧠' },
-  { title: 'Intro to Scikit-Learn', tag: 'Intermediate', icon: '📊' },
-  { title: 'Deep Learning with PyTorch', tag: 'Advanced', icon: '🔥' },
+  { 
+    title: 'Neural Networks: Systems inspired by the human brain designed to recognize patterns and interpret sensory data.', 
+    tag: 'Concept', 
+    icon: '🧠' 
+  },
+  { 
+    title: 'Supervised Learning: The process of training a model using a labeled dataset where the "answer" is already known.', 
+    tag: 'Method', 
+    icon: '📊' 
+  },
+  { 
+    title: 'Generative AI: Models capable of creating new content from text to images by learning the underlying structure of data.', 
+    tag: 'Future', 
+    icon: '🔥' 
+  },
 ];
 
 export default function DashboardPage() {
@@ -63,8 +87,7 @@ export default function DashboardPage() {
       {/* ── TOP NAV ─────────────────────────────────────────── */}
       <nav className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">🧠</span>
-          <span className="font-bold text-white tracking-tight">ML Hub</span>
+          <span className="font-bold text-white tracking-tight">ML - HUB</span>
           <span className="ml-2 bg-gray-800 border border-gray-700 text-gray-400 text-xs px-2 py-0.5 rounded-full">
             Dashboard
           </span>
@@ -83,10 +106,10 @@ export default function DashboardPage() {
         <div className="bg-gray-950 border border-gray-800 rounded-2xl px-8 py-6 mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-white mb-1">
-              Welcome back 👋
+              HII! AND WELCOME TO YOUR DASHBOARD
             </h1>
             <p className="text-gray-500 text-sm">
-              Logged in as{' '}
+              {' '}
               <span className="text-gray-300 font-medium">{user?.email}</span>
             </p>
           </div>
@@ -97,22 +120,25 @@ export default function DashboardPage() {
         </div>
 
         {/* ── STATS GRID ────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           {stats.map((s) => (
             <div
               key={s.label}
-              className="bg-gray-950 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors"
+              className="bg-gray-950 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-colors flex flex-col justify-center"
             >
-              <div className="text-2xl mb-2">{s.icon}</div>
-              <div className="text-2xl font-bold text-white">{s.value}</div>
-              <div className="text-gray-500 text-xs mt-0.5">{s.label}</div>
+              <div className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-3">
+                {s.label}
+              </div>
+              <div className="text-gray-300 text-sm md:text-base italic leading-relaxed">
+                "{s.value}"
+              </div>
             </div>
           ))}
         </div>
 
         {/* ── RESOURCES LIST ────────────────────────────────── */}
         <div className="bg-gray-950 border border-gray-800 rounded-2xl p-6">
-          <h2 className="text-white font-semibold mb-4">Learning Resources</h2>
+          <h2 className="text-white font-semibold mb-4">Learnings</h2>
           <div className="flex flex-col gap-3">
             {resources.map((r) => (
               <div

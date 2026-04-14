@@ -65,7 +65,6 @@ export default function LoginPage() {
 
         {/* Header */}
         <div className="mb-8 text-center">
-          <div className="text-4xl mb-3">🧠</div>
           <h1 className="text-xl font-bold text-white">Machine Learning Hub</h1>
           <p className="text-gray-500 text-sm mt-1">Sign in or create an account</p>
         </div>

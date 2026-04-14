@@ -4,23 +4,19 @@ import Link from 'next/link';
 // Feature card data
 const features = [
   {
-    icon: '🧠',
-    title: 'Neural Networks',
+    title: 'NEURAL NETWORKS',
     desc: 'Explore deep learning architectures and how they mimic the human brain.',
   },
   {
-    icon: '📊',
-    title: 'Data Analytics',
+    title: 'DATA ANALYTICS',
     desc: 'Transform raw datasets into meaningful insights with statistical tools.',
   },
   {
-    icon: '🤖',
-    title: 'Model Training',
+    title: 'MODEL TRAINING',
     desc: 'Build, train, and evaluate machine learning models in the cloud.',
   },
   {
-    icon: '🚀',
-    title: 'Deployment',
+    title: 'DEPLOYMENT',
     desc: 'Ship your models to production and serve predictions at scale.',
   },
 ];
@@ -32,8 +28,7 @@ export default function LandingPage() {
       {/* ── NAV ───────────────────────────────────────────────── */}
       <nav className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">🧠</span>
-          <span className="font-bold text-white tracking-tight">ML Hub</span>
+          <span className="font-bold text-white tracking-tight">ML - HUB</span>
         </div>
         <Link
           href="/login"
