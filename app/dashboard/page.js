@@ -1,5 +1,5 @@
 'use client';
-// app/dashboard/page.js  — Protected Dashboard (shown after login)
+//Protected Dashboard)
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';

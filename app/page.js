@@ -1,4 +1,4 @@
-// app/page.js  — Landing Page
+//Landing Page
 import Link from 'next/link';
 
 // Feature card data

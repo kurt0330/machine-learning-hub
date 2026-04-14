@@ -1,5 +1,5 @@
 'use client';
-// app/login/page.js  — Login & Sign-Up Page
+// Login & Sign-Up Page
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
