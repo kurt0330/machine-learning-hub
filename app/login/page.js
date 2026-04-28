@@ -1,5 +1,5 @@
 'use client';
-// Login & Sign-Up Page
+// ── Login Page ─────────────────────────────────────────────
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -9,31 +9,17 @@ import { supabase } from '../../lib/supabase';
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState('');
+  const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [loading,  setLoading]  = useState(false);
+  const [message,  setMessage]  = useState({ type: '', text: '' });
 
-  // ── SIGN UP ──────────────────────────────────────────────
-  async function handleSignUp() {
-    setLoading(true);
-    setMessage({ type: '', text: '' });
-
-    const { error } = await supabase.auth.signUp({ email, password });
-
-    if (error) {
-      setMessage({ type: 'error', text: error.message });
-    } else {
-      setMessage({
-        type: 'success',
-        text: '✅ Account created! Check your email to confirm, then log in.',
-      });
-    }
-    setLoading(false);
-  }
-
-  // ── LOGIN ────────────────────────────────────────────────
   async function handleLogin() {
+    if (!email || !password) {
+      setMessage({ type: 'error', text: 'Please fill in all fields.' });
+      return;
+    }
+
     setLoading(true);
     setMessage({ type: '', text: '' });
 
@@ -41,97 +27,165 @@ export default function LoginPage() {
 
     if (error) {
       setMessage({ type: 'error', text: error.message });
+      setLoading(false);
     } else {
-      setMessage({ type: 'success', text: '✅ Login successful! Redirecting…' });
-      setTimeout(() => router.push('/dashboard'), 1200);
+      setMessage({ type: 'success', text: 'Login successful! Redirecting…' });
+      setTimeout(() => router.push('/dashboard'), 1000);
     }
-    setLoading(false);
   }
 
-  // ── RENDER ───────────────────────────────────────────────
   return (
-    <main className="min-h-screen bg-black flex flex-col items-center justify-center px-4">
-
+    <main
+      style={{
+        minHeight:      '100vh',
+        background:     'var(--color-bg-base)',
+        display:        'flex',
+        flexDirection:  'column',
+        alignItems:     'center',
+        justifyContent: 'center',
+        padding:        'var(--space-6)',
+      }}
+    >
       {/* Back link */}
       <Link
         href="/"
-        className="text-gray-600 hover:text-gray-400 text-sm mb-8 self-start max-w-sm w-full mx-auto transition-colors"
+        style={{
+          color:          'var(--color-text-muted)',
+          fontSize:       'var(--text-sm)',
+          textDecoration: 'none',
+          marginBottom:   'var(--space-6)',
+          alignSelf:      'flex-start',
+          maxWidth:       'var(--max-width-sm)',
+          width:          '100%',
+          margin:         '0 auto var(--space-6)',
+          display:        'block',
+          transition:     'color var(--transition-fast)',
+        }}
+        onMouseEnter={e => e.target.style.color = 'var(--color-text-secondary)'}
+        onMouseLeave={e => e.target.style.color = 'var(--color-text-muted)'}
       >
         ← Back to Home
       </Link>
 
       {/* Card */}
-      <div className="w-full max-w-sm bg-gray-950 border border-gray-800 rounded-2xl p-8 shadow-2xl">
-
+      <div
+        className="card"
+        style={{
+          width:    '100%',
+          maxWidth: 'var(--max-width-sm)',
+          padding:  'var(--space-8)',
+        }}
+      >
         {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-xl font-bold text-white">Machine Learning Hub</h1>
-          <p className="text-gray-500 text-sm mt-1">Sign in or create an account</p>
+        <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
+          <div
+            style={{
+              display:        'inline-flex',
+              alignItems:     'center',
+              gap:            'var(--space-2)',
+              marginBottom:   'var(--space-4)',
+            }}
+          >
+            <span
+              style={{
+                fontWeight:     'var(--weight-bold)',
+                fontSize:       'var(--text-base)',
+                letterSpacing:  'var(--tracking-tight)',
+                color:          'var(--color-text-primary)',
+              }}
+            >
+              ML — HUB
+            </span>
+          </div>
+          <h1
+            style={{
+              fontSize:   'var(--text-xl)',
+              fontWeight: 'var(--weight-bold)',
+              color:      'var(--color-text-primary)',
+              marginBottom: 'var(--space-2)',
+            }}
+          >
+            Welcome back
+          </h1>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+            Sign in to your account to continue
+          </p>
         </div>
 
-        {/* Email field */}
-        <div className="mb-4">
-          <label className="block text-gray-400 text-xs font-medium mb-1.5 uppercase tracking-wide">
-            Email Address
-          </label>
+        {/* Email */}
+        <div className="form-group">
+          <label className="form-label">Email Address</label>
           <input
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            className={`form-input ${message.type === 'error' ? 'form-input--error' : ''}`}
             placeholder="you@example.com"
-            className="w-full bg-gray-900 border border-gray-700 text-white placeholder-gray-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500 transition-colors"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleLogin()}
           />
         </div>
 
-        {/* Password field */}
-        <div className="mb-6">
-          <label className="block text-gray-400 text-xs font-medium mb-1.5 uppercase tracking-wide">
-            Password
-          </label>
+        {/* Password */}
+        <div className="form-group">
+          <label className="form-label">Password</label>
           <input
             type="password"
+            className={`form-input ${message.type === 'error' ? 'form-input--error' : ''}`}
+            placeholder="Your password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Minimum 6 characters"
-            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-            className="w-full bg-gray-900 border border-gray-700 text-white placeholder-gray-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500 transition-colors"
+            onChange={e => setPassword(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleLogin()}
           />
         </div>
 
-        {/* Feedback message */}
+        {/* Feedback */}
         {message.text && (
           <div
-            className={`mb-5 px-4 py-3 rounded-lg text-sm ${
-              message.type === 'error'
-                ? 'bg-red-950 border border-red-800 text-red-300'
-                : 'bg-green-950 border border-green-800 text-green-300'
+            className={`feedback ${
+              message.type === 'error' ? 'feedback--error' : 'feedback--success'
             }`}
+            style={{ marginBottom: 'var(--space-5)' }}
           >
             {message.text}
           </div>
         )}
 
-        {/* Buttons */}
-        <div className="flex gap-3">
-          <button
-            onClick={handleLogin}
-            disabled={loading}
-            className="flex-1 bg-white text-black font-semibold py-3 rounded-lg text-sm hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? '…' : 'Log In'}
-          </button>
-          <button
-            onClick={handleSignUp}
-            disabled={loading}
-            className="flex-1 bg-gray-800 text-gray-200 font-semibold py-3 rounded-lg text-sm hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors border border-gray-700"
-          >
-            {loading ? '…' : 'Sign Up'}
-          </button>
+        {/* Submit */}
+        <button
+          className="btn btn--primary btn--full btn--lg"
+          onClick={handleLogin}
+          disabled={loading}
+        >
+          {loading
+            ? <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> Signing in…</>
+            : 'Log In'
+          }
+        </button>
+
+        {/* Divider */}
+        <div className="divider--text" style={{ margin: 'var(--space-6) 0' }}>
+          or
         </div>
 
-        {/* Divider note */}
-        <p className="text-center text-gray-700 text-xs mt-6">
-          New here? Click <span className="text-gray-500">Sign Up</span> to create an account.
+        {/* Sign up link */}
+        <p
+          style={{
+            textAlign:  'center',
+            fontSize:   'var(--text-sm)',
+            color:      'var(--color-text-muted)',
+          }}
+        >
+          Don&apos;t have an account?{' '}
+          <Link
+            href="/signup"
+            style={{
+              color:          'var(--color-text-primary)',
+              fontWeight:     'var(--weight-medium)',
+              textDecoration: 'none',
+            }}
+          >
+            Create one →
+          </Link>
         </p>
       </div>
     </main>

@@ -1,15 +1,23 @@
-
+// ── Root Layout ────────────────────────────────────────────
 import './globals.css';
+import Navbar from '../components/layout/Navbar';
 
 export const metadata = {
-  title: 'Machine Learning Hub',
-  description: 'A simple integrated web app using Supabase and Vercel.',
+  title:       'The Daily Stack',
+  description: 'Your hub for gaming strategies, life hacks, and more.',
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="bg-black text-gray-100 min-h-screen antialiased">
+      <body
+        style={{
+          background: 'var(--color-bg-base)',
+          color:      'var(--color-text-primary)',
+          minHeight:  '100vh',
+        }}
+      >
+        <Navbar />
         {children}
       </body>
     </html>

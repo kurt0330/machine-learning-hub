@@ -4,20 +4,20 @@ import Link from 'next/link';
 // Feature card data
 const features = [
   {
-    title: 'NEURAL NETWORKS',
-    desc: 'Explore deep learning architectures and how they mimic the human brain.',
+    title: 'SHARE RESEARCH',
+    desc: 'Upload your PDFs and technical papers to share your findings with the community.',
   },
   {
-    title: 'DATA ANALYTICS',
-    desc: 'Transform raw datasets into meaningful insights with statistical tools.',
+    title: 'DISCOVER INSIGHTS',
+    desc: 'Browse a curated feed of articles across various topics in science and technology.',
   },
   {
-    title: 'MODEL TRAINING',
-    desc: 'Build, train, and evaluate machine learning models in the cloud.',
+    title: 'ENGAGE & INTERACT',
+    desc: 'Like your favorite posts and save the most impactful research to your top-rated list.',
   },
   {
-    title: 'DEPLOYMENT',
-    desc: 'Ship your models to production and serve predictions at scale.',
+    title: 'REAL-TIME UPDATES',
+    desc: 'Stay at the cutting edge with a live feed that updates as soon as new content is published.',
   },
 ];
 
@@ -58,7 +58,7 @@ export default function LandingPage() {
 
         {/* Description */}
         <p className="max-w-xl text-gray-400 text-lg leading-relaxed mb-10">
-          A simple, integrated platform for exploring machine learning concepts.
+          A community-driven library for modern research and technical insights. Seamlessly share and discover new ideas.
           Powered by{' '}
           <span className="text-white font-medium">Supabase Authentication</span>{' '}
           and deployed seamlessly on{' '}

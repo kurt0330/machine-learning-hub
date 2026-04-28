@@ -1,0 +1,116 @@
+/* ═══════════════════════════════════════════════════════════
+   ML-HUB DESIGN TOKENS
+   Single source of truth for the entire design system.
+   Import this into globals.css — never hardcode values elsewhere.
+═══════════════════════════════════════════════════════════ */
+
+:root {
+
+  /* ── COLORS: Base ─────────────────────────────────────── */
+  --color-bg-base:        #000000;   /* page background */
+  --color-bg-surface:     #0a0a0a;   /* cards, panels */
+  --color-bg-elevated:    #111111;   /* inputs, hover states */
+  --color-bg-overlay:     #1a1a1a;   /* modals, dropdowns */
+
+  /* ── COLORS: Borders ──────────────────────────────────── */
+  --color-border-subtle:  #1f1f1f;   /* faint dividers */
+  --color-border-default: #2a2a2a;   /* standard card borders */
+  --color-border-strong:  #3f3f3f;   /* focused inputs */
+  --color-border-hover:   #555555;   /* interactive hover */
+
+  /* ── COLORS: Text ─────────────────────────────────────── */
+  --color-text-primary:   #f0f0f0;   /* headings, bold labels */
+  --color-text-secondary: #a0a0a0;   /* body copy, descriptions */
+  --color-text-muted:     #555555;   /* placeholders, meta info */
+  --color-text-disabled:  #333333;
+
+  /* ── COLORS: Accent ───────────────────────────────────── */
+  --color-accent-primary:    #ffffff;   /* primary buttons */
+  --color-accent-primary-fg: #000000;   /* text ON primary buttons */
+  --color-accent-blue:       #3b82f6;   /* links, tags, active tabs */
+  --color-accent-blue-dim:   #1e3a5f;   /* blue chip backgrounds */
+  --color-accent-green:      #22c55e;   /* success, online status */
+  --color-accent-green-dim:  #052e16;
+  --color-accent-red:        #ef4444;   /* errors, delete, heart active */
+  --color-accent-red-dim:    #2d0a0a;
+  --color-accent-amber:      #f59e0b;   /* warnings */
+  --color-accent-amber-dim:  #2d1f00;
+
+  /* ── COLORS: Gradients ────────────────────────────────── */
+  --gradient-brand: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
+  --gradient-card:  linear-gradient(180deg, #111111 0%, #0a0a0a 100%);
+  --gradient-hero:  linear-gradient(180deg, #000000 0%, #0a0a0a 60%, #000000 100%);
+
+  /* ── TYPOGRAPHY ───────────────────────────────────────── */
+  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:  'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+
+  --text-xs:    0.70rem;    /* 11.2px — meta, badges */
+  --text-sm:    0.813rem;   /* 13px  — body, inputs */
+  --text-base:  0.938rem;   /* 15px  — default */
+  --text-md:    1.063rem;   /* 17px  — card titles */
+  --text-lg:    1.25rem;    /* 20px  — section headings */
+  --text-xl:    1.563rem;   /* 25px  — page headings */
+  --text-2xl:   2rem;       /* 32px  — hero sub */
+  --text-3xl:   2.813rem;   /* 45px  — hero title */
+  --text-4xl:   3.75rem;    /* 60px  — landing hero */
+
+  --weight-normal:   400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+  --weight-black:    900;
+
+  --leading-tight:  1.2;
+  --leading-snug:   1.4;
+  --leading-normal: 1.6;
+  --leading-loose:  1.8;
+
+  --tracking-tight:  -0.03em;
+  --tracking-normal:  0em;
+  --tracking-wide:    0.06em;
+  --tracking-widest:  0.12em;
+
+  /* ── SPACING ──────────────────────────────────────────── */
+  --space-1:   0.25rem;   /*  4px */
+  --space-2:   0.5rem;    /*  8px */
+  --space-3:   0.75rem;   /* 12px */
+  --space-4:   1rem;      /* 16px */
+  --space-5:   1.25rem;   /* 20px */
+  --space-6:   1.5rem;    /* 24px */
+  --space-8:   2rem;      /* 32px */
+  --space-10:  2.5rem;    /* 40px */
+  --space-12:  3rem;      /* 48px */
+  --space-16:  4rem;      /* 64px */
+  --space-20:  5rem;      /* 80px */
+  --space-24:  6rem;      /* 96px */
+
+  /* ── BORDER RADIUS ────────────────────────────────────── */
+  --radius-sm:   0.375rem;   /*  6px — badges, chips */
+  --radius-md:   0.625rem;   /* 10px — inputs, small cards */
+  --radius-lg:   0.875rem;   /* 14px — cards */
+  --radius-xl:   1.25rem;    /* 20px — panels, modals */
+  --radius-2xl:  1.75rem;    /* 28px — large surfaces */
+  --radius-full: 9999px;     /* pills, avatars */
+
+  /* ── SHADOWS ──────────────────────────────────────────── */
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.6), 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md:   0 4px 12px rgba(0,0,0,0.7), 0 2px 4px rgba(0,0,0,0.5);
+  --shadow-lg:   0 8px 30px rgba(0,0,0,0.8), 0 4px 10px rgba(0,0,0,0.6);
+  --shadow-xl:   0 20px 60px rgba(0,0,0,0.9), 0 8px 20px rgba(0,0,0,0.7);
+  --shadow-glow: 0 0 20px rgba(255,255,255,0.04);
+
+  /* ── TRANSITIONS ──────────────────────────────────────── */
+  --transition-fast:   150ms ease;
+  --transition-base:   220ms ease;
+  --transition-slow:   380ms ease;
+  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── LAYOUT ───────────────────────────────────────────── */
+  --max-width-sm:   480px;
+  --max-width-md:   720px;
+  --max-width-lg:   960px;
+  --max-width-xl:  1200px;
+  --navbar-height:   60px;
+  --sidebar-width:  260px;
+}
