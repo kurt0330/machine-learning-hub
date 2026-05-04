@@ -1,18 +1,26 @@
 'use client';
-// ── Login Page ─────────────────────────────────────────────
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
+import { useUser } from '../../hooks/useUser';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user, loading: userLoading } = useUser();
 
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
   const [message,  setMessage]  = useState({ type: '', text: '' });
+
+  // ── NEW: Auto-redirect if session exists ────────────────
+  useEffect(() => {
+    if (!userLoading && user) {
+      console.log("Session detected, redirecting to dashboard...");
+      router.replace('/dashboard');
+    }
+  }, [user, userLoading, router]);
 
   async function handleLogin() {
     if (!email || !password) {
@@ -30,8 +38,23 @@ export default function LoginPage() {
       setLoading(false);
     } else {
       setMessage({ type: 'success', text: 'Login successful! Redirecting…' });
-      setTimeout(() => router.push('/dashboard'), 1000);
+      // No need to manual redirect here, the useEffect above will catch it
     }
+  }
+
+  // ── IMPORTANT: Prevent showing the form if we are already logged in ──
+  if (userLoading || user) {
+    return (
+      <main style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        background: 'var(--color-bg-base)' 
+      }}>
+        <div className="spinner" style={{ width: 40, height: 40 }} />
+      </main>
+    );
   }
 
   return (

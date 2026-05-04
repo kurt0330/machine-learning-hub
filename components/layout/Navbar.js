@@ -1,7 +1,7 @@
 'use client';
 // ── Navbar ─────────────────────────────────────────────────
-// Fixed top bar with brand, upload CTA, notification bell,
-// and profile avatar. Reads from useUser() for live state.
+// Fixed top bar with brand, upload CTA, the new Alert Button,
+// notification bell, and profile avatar.
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -9,6 +9,10 @@ import { usePathname } from 'next/navigation';
 import { useUser } from '../../hooks/useUser';
 import { supabase } from '../../lib/supabase';
 import { getDisplayName, getInitials } from '../../lib/helpers';
+
+// ── IMPORT THE NEW ALERT BUTTON ──
+// Since it is in the same folder, we use './'
+import NewAlertButton from './NewAlertButton'; 
 
 export default function Navbar() {
   const pathname               = usePathname();
@@ -18,7 +22,7 @@ export default function Navbar() {
   const [menuOpen,     setMenuOpen]     = useState(false);
   const menuRef = useRef(null);
 
-  // ── Fetch unread notification count ─────────────────────
+  // ── Fetch unread notification count (Standard Notifs) ──
   useEffect(() => {
     if (!user?.id) { setUnreadCount(0); return; }
 
@@ -34,222 +38,174 @@ export default function Navbar() {
 
     fetchUnread();
 
-    // Realtime subscription — red dot updates instantly
     const channel = supabase
-      .channel(`notif-count-${user.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event:  '*',
-          schema: 'public',
-          table:  'notifications',
-          filter: `recipient_id=eq.${user.id}`,
-        },
-        fetchUnread
-      )
+      .channel('navbar-notifs')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'notifications',
+        filter: `recipient_id=eq.${user.id}`
+      }, () => {
+        fetchUnread();
+      })
       .subscribe();
 
     return () => supabase.removeChannel(channel);
-  }, [user?.id]);
+  }, [user]);
 
-  // ── Close dropdown on outside click ─────────────────────
+  // ── Close menu on click outside ────────────────────────
   useEffect(() => {
-    function handleClick(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
+    function handleClickOutside(e) {
+      if (menuOpen && menuRef.current && !menuRef.current.contains(e.target)) {
         setMenuOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
 
   const displayName = getDisplayName(profile);
   const initials    = getInitials(displayName);
-  const avatarUrl   = profile?.avatar_url || null;
-
-  // Don't render navbar on auth pages
-  if (pathname === '/login' || pathname === '/signup') return null;
 
   return (
-    <nav className="navbar">
-
-      {/* ── Brand ──────────────────────────────────────── */}
-      <Link href={user ? '/dashboard' : '/'} className="navbar__brand">
-        ML — HUB
+    <nav style={{
+      position:       'fixed',
+      top:            0,
+      left:           0,
+      right:          0,
+      height:         'var(--nav-height)',
+      background:     'var(--color-bg-surface)',
+      borderBottom:   '1px solid var(--color-border-subtle)',
+      display:        'flex',
+      alignItems:     'center',
+      justifyContent: 'space-between',
+      padding:        '0 var(--space-6)',
+      zIndex:         1000,
+      backdropFilter: 'blur(8px)',
+    }}>
+      {/* Brand / Logo */}
+      <Link href="/dashboard" style={{
+        fontSize:       'var(--text-lg)',
+        fontWeight:     'var(--weight-bold)',
+        color:          'var(--color-text-primary)',
+        textDecoration: 'none',
+        letterSpacing:  '-0.02em',
+        display:        'flex',
+        alignItems:     'center',
+        gap:            'var(--space-2)',
+      }}>
+        <div style={{
+          width:        '32px',
+          height:       '32px',
+          background:   'var(--color-primary)',
+          borderRadius: 'var(--radius-md)',
+          display:      'flex',
+          alignItems:   'center',
+          justifyContent: 'center',
+          color:        'white',
+          fontSize:     '18px'
+        }}>ML</div>
+        <span className="hide-mobile">Hub</span>
       </Link>
 
-      {/* ── Right side actions ─────────────────────────── */}
-      <div className="navbar__actions">
-
+      {/* Actions */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
         {user ? (
           <>
-            {/* Upload button */}
-            <Link
-              href="/articles/upload"
-              className="btn btn--secondary btn--sm"
-              style={{ gap: 'var(--space-2)' }}
+            {/* Upload */}
+            <Link 
+              href="/articles/upload" 
+              className="btn btn--primary btn--sm hide-mobile"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="2.5"
-                strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
               Upload
             </Link>
 
-            {/* Notification bell */}
-            <Link
-              href="/profile"
-              style={{ position: 'relative', display: 'inline-flex' }}
-              aria-label="Notifications"
-            >
-              <button
-                className="btn btn--ghost btn--icon"
-                style={{ position: 'relative' }}
-                tabIndex={-1}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2"
-                  strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                </svg>
-                {unreadCount > 0 && (
-                  <span className="notif-dot" aria-label={`${unreadCount} unread`} />
-                )}
-              </button>
+            {/* ── THE GHOST BUTTON: NEW ARTICLE ALERT ── */}
+            <NewAlertButton />
+
+            {/* Notifications Bell */}
+            <Link href="/notifications" style={{ position: 'relative', display: 'flex', color: 'var(--color-text-secondary)' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              {unreadCount > 0 && (
+                <span style={{
+                  position:     'absolute',
+                  top:          '-2px',
+                  right:        '-2px',
+                  width:        '8px',
+                  height:       '8px',
+                  background:   'var(--color-accent-red)',
+                  borderRadius: '50%',
+                  border:       '2px solid var(--color-bg-surface)',
+                }} />
+              )}
             </Link>
 
-            {/* Profile dropdown ──────────────────────── */}
-            <div ref={menuRef} style={{ position: 'relative' }}>
-              <button
-                onClick={() => setMenuOpen(prev => !prev)}
-                style={{
-                  display:      'flex',
-                  alignItems:   'center',
-                  gap:          'var(--space-2)',
-                  background:   'transparent',
-                  border:       '1px solid var(--color-border-default)',
-                  borderRadius: 'var(--radius-full)',
-                  padding:      '3px var(--space-3) 3px 3px',
-                  cursor:       'pointer',
-                  transition:   'border-color var(--transition-fast)',
-                }}
-                onMouseEnter={e =>
-                  e.currentTarget.style.borderColor = 'var(--color-border-hover)'}
-                onMouseLeave={e =>
-                  e.currentTarget.style.borderColor = 'var(--color-border-default)'}
-                aria-label="Profile menu"
+            {/* Profile Avatar & Dropdown */}
+            <div style={{ position: 'relative' }} ref={menuRef}>
+              <button 
+                onClick={() => setMenuOpen(!menuOpen)}
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex' }}
               >
-                {/* Avatar */}
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt={displayName}
-                    className="avatar avatar--xs"
-                  />
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="avatar avatar--sm" />
                 ) : (
-                  <div
-                    className="avatar avatar--xs"
-                    style={{
-                      display:        'flex',
-                      alignItems:     'center',
-                      justifyContent: 'center',
-                      background:     'var(--color-bg-overlay)',
-                      fontSize:       'var(--text-xs)',
-                      fontWeight:     'var(--weight-semibold)',
-                      color:          'var(--color-text-secondary)',
-                    }}
-                  >
+                  <div className="avatar avatar--sm" style={{ 
+                    background: 'var(--color-bg-overlay)', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    fontSize: 'var(--text-xs)', 
+                    fontWeight: 'var(--weight-bold)', 
+                    color: 'var(--color-text-secondary)' 
+                  }}>
                     {initials}
                   </div>
                 )}
-                {/* Name — hidden on mobile */}
-                <span
-                  style={{
-                    fontSize:   'var(--text-sm)',
-                    fontWeight: 'var(--weight-medium)',
-                    color:      'var(--color-text-primary)',
-                    maxWidth:   '120px',
-                    overflow:   'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                  className="hide-mobile"
-                >
-                  {displayName}
-                </span>
-                {/* Chevron */}
-                <svg
-                  width="12" height="12" viewBox="0 0 24 24" fill="none"
-                  stroke="var(--color-text-muted)" strokeWidth="2.5"
-                  strokeLinecap="round" strokeLinejoin="round"
-                  style={{
-                    transform:  menuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                    transition: 'transform var(--transition-fast)',
-                  }}
-                >
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
               </button>
 
-              {/* Dropdown menu */}
               {menuOpen && (
-                <div
-                  style={{
-                    position:     'absolute',
-                    top:          'calc(100% + var(--space-2))',
-                    right:        0,
-                    minWidth:     '180px',
-                    background:   'var(--color-bg-overlay)',
-                    border:       '1px solid var(--color-border-default)',
-                    borderRadius: 'var(--radius-lg)',
-                    boxShadow:    'var(--shadow-lg)',
-                    overflow:     'hidden',
-                    zIndex:       200,
-                    animation:    'dropdown-in 0.15s ease',
-                  }}
-                >
-                  <DropdownItem href="/profile" onClick={() => setMenuOpen(false)}>
-                    My Profile
-                  </DropdownItem>
-                  <DropdownItem href="/dashboard" onClick={() => setMenuOpen(false)}>
-                    Feed
-                  </DropdownItem>
-                  <div style={{
-                    height:     '1px',
-                    background: 'var(--color-border-subtle)',
-                    margin:     'var(--space-1) 0',
-                  }} />
-                  <button
-                    onClick={() => { setMenuOpen(false); signOut(); }}
+                <div style={{
+                  position:     'absolute',
+                  top:          'calc(100% + var(--space-2))',
+                  right:        0,
+                  width:        '200px',
+                  background:   'var(--color-bg-surface)',
+                  border:       '1px solid var(--color-border-default)',
+                  borderRadius: 'var(--radius-lg)',
+                  boxShadow:    'var(--shadow-lg)',
+                  padding:      'var(--space-2) 0',
+                  animation:    'dropdown-in 0.2s ease-out forwards',
+                }}>
+                  <div style={{ padding: 'var(--space-3) var(--space-4)', borderBottom: '1px solid var(--color-border-subtle)', marginBottom: 'var(--space-1)' }}>
+                    <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-primary)', marginBottom: '2px' }}>{displayName}</p>
+                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>@{profile?.username}</p>
+                  </div>
+                  <DropdownItem href={`/profile/${profile?.username}`} onClick={() => setMenuOpen(false)}>My Profile</DropdownItem>
+                  <DropdownItem href="/profile/edit" onClick={() => setMenuOpen(false)}>Settings</DropdownItem>
+                  <div style={{ height: '1px', background: 'var(--color-border-subtle)', margin: 'var(--space-1) 0' }} />
+                  <button 
+                    onClick={signOut}
                     style={{
                       display:    'block',
                       width:      '100%',
-                      padding:    'var(--space-3) var(--space-4)',
-                      background: 'transparent',
-                      border:     'none',
                       textAlign:  'left',
+                      padding:    'var(--space-3) var(--space-4)',
                       fontSize:   'var(--text-sm)',
                       color:      'var(--color-accent-red)',
+                      background: 'none',
+                      border:     'none',
                       cursor:     'pointer',
-                      transition: 'background var(--transition-fast)',
                     }}
-                    onMouseEnter={e =>
-                      e.currentTarget.style.background = 'var(--color-accent-red-dim)'}
-                    onMouseLeave={e =>
-                      e.currentTarget.style.background = 'transparent'}
                   >
-                    Sign Out
+                    Log Out
                   </button>
                 </div>
               )}
             </div>
           </>
         ) : (
-          /* Not logged in */
           <>
             <Link href="/login"  className="btn btn--ghost btn--sm">Log In</Link>
             <Link href="/signup" className="btn btn--primary btn--sm">Sign Up</Link>
@@ -257,7 +213,6 @@ export default function Navbar() {
         )}
       </div>
 
-      {/* Dropdown animation */}
       <style>{`
         @keyframes dropdown-in {
           from { opacity: 0; transform: translateY(-6px); }
@@ -271,30 +226,23 @@ export default function Navbar() {
   );
 }
 
-// ── Small helper: dropdown link item ──────────────────────
 function DropdownItem({ href, onClick, children }) {
   return (
-    <Link
-      href={href}
-      onClick={onClick}
-      style={{
-        display:        'block',
-        padding:        'var(--space-3) var(--space-4)',
-        fontSize:       'var(--text-sm)',
-        color:          'var(--color-text-secondary)',
-        textDecoration: 'none',
-        transition:     'background var(--transition-fast), color var(--transition-fast)',
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.background = 'var(--color-bg-elevated)';
-        e.currentTarget.style.color      = 'var(--color-text-primary)';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.background = 'transparent';
-        e.currentTarget.style.color      = 'var(--color-text-secondary)';
-      }}
-    >
+    <Link href={href} onClick={onClick} className="dropdown-item-link">
       {children}
+      <style>{`
+        .dropdown-item-link {
+          display: block;
+          padding: var(--space-3) var(--space-4);
+          font-size: var(--text-sm);
+          color: var(--color-text-secondary);
+          text-decoration: none;
+        }
+        .dropdown-item-link:hover {
+          background: var(--color-bg-overlay);
+          color: var(--color-text-primary);
+        }
+      `}</style>
     </Link>
   );
 }

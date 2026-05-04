@@ -3,7 +3,7 @@
 // One article in the feed. Shows author info, title,
 // description preview, like count, and share button.
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 import { getDisplayName, getInitials, timeAgo, truncate, formatCount } from '../../lib/helpers';
@@ -15,11 +15,35 @@ export default function ArticleCard({
   currentUserId,
   onLikeToggle,
 }) {
+  const [author, setAuthor]           = useState(null);
   const [likeLoading, setLikeLoading] = useState(false);
   const [shareMsg,    setShareMsg]    = useState('');
 
-  const author      = article.profiles;
-  const displayName = getDisplayName(author);
+  // ── FIX: Convert relative image path to Supabase Public URL ──
+  let finalCoverUrl = article.cover_url;
+  if (finalCoverUrl && !finalCoverUrl.startsWith('http')) {
+    // Note: If your storage bucket is named "covers" instead of "articles", change 'articles' below to 'covers'
+    const { data } = supabase.storage.from('articles').getPublicUrl(finalCoverUrl);
+    finalCoverUrl = data.publicUrl;
+  }
+  // ─────────────────────────────────────────────────────────────
+
+  // Fetch the profile separately because we bypassed the database join
+  useEffect(() => {
+    async function getAuthor() {
+      if (!article.author_id) return;
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', article.author_id)
+        .single();
+      
+      if (data) setAuthor(data);
+    }
+    getAuthor();
+  }, [article.author_id]);
+
+  const displayName = getDisplayName(author) || "Loading...";
   const initials    = getInitials(displayName);
   const avatarUrl   = author?.avatar_url || null;
 
@@ -111,7 +135,7 @@ export default function ArticleCard({
         )}
 
         {/* ── Cover image ────────────────────────────── */}
-        {article.cover_url && (
+        {finalCoverUrl && (
           <div style={{
             width:        '100%',
             height:       '160px',
@@ -121,7 +145,7 @@ export default function ArticleCard({
             background:   'var(--color-bg-overlay)',
           }}>
             <img
-              src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/articles/${article.cover_url}`}
+              src={finalCoverUrl}
               alt={article.title}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />

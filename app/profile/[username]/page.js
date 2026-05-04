@@ -42,10 +42,10 @@ export default function ProfilePage() {
 
       setProfile(profileData);
 
-      // Fetch their articles
+      // ── FIX: Removed 'file_url' to prevent database crash! ──
       const { data: articlesData } = await supabase
         .from('articles')
-        .select('id, title, description, cover_url, file_url, likes_count, created_at')
+        .select('id, title, description, cover_url, likes_count, created_at')
         .eq('author_id', profileData.id)
         .order('created_at', { ascending: false });
 

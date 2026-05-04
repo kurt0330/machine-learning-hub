@@ -55,10 +55,16 @@ export default function SignUpPage() {
       return;
     }
 
-    // ── Create auth user ────────────────────────────────
+    // ── Create auth user with Metadata ──────────────────
+    // Passing user_name here allows the SQL trigger to find it
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          user_name: username.toLowerCase(),
+        }
+      }
     });
 
     if (signUpError) {
@@ -67,13 +73,8 @@ export default function SignUpPage() {
       return;
     }
 
-    // ── Update the auto-created profile with their chosen username ──
-    if (signUpData.user) {
-      await supabase
-        .from('profiles')
-        .update({ username: username.toLowerCase() })
-        .eq('id', signUpData.user.id);
-    }
+    // Note: We removed the manual .update() call because the 
+    // SQL trigger now handles this automatically using the metadata above.
 
     setMessage({
       type: 'success',

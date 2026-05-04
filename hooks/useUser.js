@@ -1,35 +1,31 @@
-// ═══════════════════════════════════════════════════════════
-// useUser — Global auth + profile hook
-//
-// Provides:  { user, profile, loading, signOut, refreshProfile }
-//
-// Usage:
-//   const { user, profile, loading } = useUser();
-//
-// Wrap your app's layout (or each page) — it attaches a single
-// Supabase auth listener and fetches the linked profile row.
-// ═══════════════════════════════════════════════════════════
-
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabase';
 
-export function useUser() {
-  const router = useRouter();
+// 1. Create the Context
+const UserContext = createContext({ 
+  user: null, 
+  profile: null, 
+  loading: true, 
+  signOut: () => {}, 
+  refreshProfile: () => {} 
+});
 
-  const [user,    setUser]    = useState(null);
+// 2. The Provider Component (Used in layout.js)
+export function UserProvider({ children }) {
+  const router = useRouter();
+  const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ── Fetch profile row from public.profiles ─────────────
+  // Fetch profile logic from your original version
   const fetchProfile = useCallback(async (userId) => {
     if (!userId) {
       setProfile(null);
       return;
     }
-
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -44,12 +40,10 @@ export function useUser() {
     }
   }, []);
 
-  // ── Public: lets pages force a profile re-fetch ────────
   const refreshProfile = useCallback(() => {
     if (user?.id) fetchProfile(user.id);
   }, [user, fetchProfile]);
 
-  // ── Sign out helper ────────────────────────────────────
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -57,16 +51,14 @@ export function useUser() {
     router.push('/');
   }, [router]);
 
-  // ── Auth state listener ────────────────────────────────
+  // Auth listener logic from your original version
   useEffect(() => {
-    // 1. Check for an existing session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
       fetchProfile(currentUser?.id).finally(() => setLoading(false));
     });
 
-    // 2. Subscribe to sign-in / sign-out events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         const currentUser = session?.user ?? null;
@@ -79,18 +71,19 @@ export function useUser() {
     return () => subscription.unsubscribe();
   }, [fetchProfile]);
 
-  return { user, profile, loading, signOut, refreshProfile };
+  return (
+    <UserContext.Provider value={{ user, profile, loading, signOut, refreshProfile }}>
+      {children}
+    </UserContext.Provider>
+  );
 }
 
-// ── Guard helper ───────────────────────────────────────────
-// Use this in pages that require auth.
-// Example:
-//   const { user, loading } = useUser();
-//   useAuthGuard(user, loading);
+// 3. The Hook (Used in Navbar, Articles, etc.)
+export const useUser = () => useContext(UserContext);
 
+// 4. Auth Guard Helper
 export function useAuthGuard(user, loading) {
   const router = useRouter();
-
   useEffect(() => {
     if (!loading && !user) {
       router.replace('/login');

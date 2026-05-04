@@ -1,10 +1,13 @@
 // ── Root Layout ────────────────────────────────────────────
 import './globals.css';
-import Navbar from '../components/layout/Navbar';
+import Navbar             from '../components/layout/Navbar';
+import NotificationToast  from '../components/layout/NotificationToast';
+// Import your UserProvider here
+import { UserProvider }   from '../hooks/useUser'; 
 
 export const metadata = {
-  title:       'The Daily Stack',
-  description: 'Your hub for gaming strategies, life hacks, and more.',
+  title:       'ML-Hub · The Daily Stack',
+  description: 'A community platform for sharing articles, research, and ideas.',
 };
 
 export default function RootLayout({ children }) {
@@ -17,8 +20,14 @@ export default function RootLayout({ children }) {
           minHeight:  '100vh',
         }}
       >
-        <Navbar />
-        {children}
+        {/* Wrap everything in the Provider */}
+        <UserProvider>
+          <Navbar />
+          <NotificationToast />
+          <main>
+            {children}
+          </main>
+        </UserProvider>
       </body>
     </html>
   );
