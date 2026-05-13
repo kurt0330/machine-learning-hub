@@ -62,7 +62,7 @@ export default function NotificationToast() {
             id:        `toast-${notif.id}-${Date.now()}`,
             notifId:   notif.id,
             articleId: notif.article_id,
-            title:     notif.title ?? 'New article posted',
+            title:     notif.title ?? 'Article Update',
             type:      notif.type  ?? 'new_article',
           });
         }
