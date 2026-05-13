@@ -1,7 +1,4 @@
 'use client';
-// ── New Article Alert Button ───────────────────────────────
-// Appears only when a new article is posted in the last 5 mins.
-// Ghost component: invisible when no recent alerts exist.
 
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase'; 
@@ -9,39 +6,48 @@ import { useUser } from '../../hooks/useUser';
 import Link from 'next/link';
 
 export default function NewAlertButton() {
-  const { user } = useUser();
+  const { user, loading } = useUser();
   const [alerts, setAlerts] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
+    if (loading || !user) return;
 
     const fetchAlerts = async () => {
-      // Logic: Only get alerts created in the last 5 minutes
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-      
-      const { data } = await supabase
-        .from('article_alerts')
-        .select(`
-          id, 
-          article_id, 
-          created_at,
-          actor:profiles!actor_id(username),
-          article:articles(title)
-        `)
-        .eq('user_id', user.id)
-        .gt('created_at', fiveMinutesAgo)
-        .order('created_at', { ascending: false });
+      try {
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+        
+        // Fixed Join Syntax to avoid 400 error
+        const { data, error } = await supabase
+          .from('article_alerts')
+          .select(`
+            id, 
+            article_id, 
+            created_at,
+            actor_id,
+            profiles:actor_id ( username ),
+            articles:article_id ( title )
+          `)
+          .eq('user_id', user.id)
+          .gt('created_at', fiveMinutesAgo)
+          .order('created_at', { ascending: false });
 
-      if (data) setAlerts(data);
+        if (error) {
+          console.error('[Alerts] fetch error:', error.message);
+          return;
+        }
+
+        if (data) setAlerts(data);
+      } catch (err) {
+        console.error('[Alerts] unexpected error:', err);
+      }
     };
 
     fetchAlerts();
 
-    // ── Realtime Listener ──
-    // Listens specifically for new entries in the article_alerts table
+    // Realtime Listener
     const channel = supabase
-      .channel('new-article-alerts-realtime')
+      .channel(`alerts-${user.id}`)
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
@@ -52,24 +58,19 @@ export default function NewAlertButton() {
       })
       .subscribe();
 
-    // Refresh every 30s to "expire" alerts that cross the 5-min mark
     const interval = setInterval(fetchAlerts, 30000);
 
     return () => {
       supabase.removeChannel(channel);
       clearInterval(interval);
     };
-  }, [user]);
+  }, [user, loading]);
 
-  // Hide component completely if no alerts exist in the last 5 minutes
   if (alerts.length === 0) return null;
 
   return (
     <div className="alert-wrapper">
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="btn-new-alert"
-      >
+      <button onClick={() => setIsOpen(!isOpen)} className="btn-new-alert">
         NEW ({alerts.length})
       </button>
 
@@ -84,10 +85,10 @@ export default function NewAlertButton() {
               onClick={() => setIsOpen(false)}
             >
               <div className="alert-row">
-                <span className="alert-user">@{alert.actor?.username}</span>
+                <span className="alert-user">@{alert.profiles?.username || 'User'}</span>
                 <span className="alert-time-tag">NEW</span>
               </div>
-              <span className="alert-title">{alert.article?.title}</span>
+              <span className="alert-title">{alert.articles?.title || 'New Article'}</span>
             </Link>
           ))}
         </div>
@@ -108,17 +109,12 @@ export default function NewAlertButton() {
           font-weight: 800;
           font-size: 11px;
           cursor: pointer;
-          letter-spacing: 0.05em;
           animation: pulse-red 2s infinite;
           transition: transform 0.2s;
-          display: flex;
-          align-items: center;
-          gap: 4px;
         }
 
         .btn-new-alert:hover {
           transform: scale(1.05);
-          background: #ff6b81;
         }
 
         .alert-dropdown {
@@ -150,6 +146,10 @@ export default function NewAlertButton() {
           text-decoration: none;
           border-bottom: 1px solid #f1f1f1;
           transition: background 0.2s;
+        }
+
+        .alert-item:last-child {
+          border-bottom: none;
         }
 
         .alert-item:hover {

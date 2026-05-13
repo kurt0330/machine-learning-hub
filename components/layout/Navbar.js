@@ -9,7 +9,11 @@ import NewAlertButton from './NewAlertButton';
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { user, profile, signOut } = useUser();
+  
+  // 1. EXTRACT 'loading' FROM useUser HOOK
+  // This allows the Navbar to know if Supabase is still checking for a session.
+  const { user, profile, loading, signOut } = useUser();
+  
   const [unreadCount, setUnreadCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -25,7 +29,7 @@ export default function Navbar() {
       setUnreadCount(count ?? 0);
     }
     fetchUnread();
-    const channel = supabase.channel('navbar-notifs').on('postgres_changes', { 
+    const channel = supabase.channel('navbar-notifs').on('postgres_changes', {
       event: '*', schema: 'public', table: 'notifications', filter: `recipient_id=eq.${user.id}`
     }, () => fetchUnread()).subscribe();
     return () => supabase.removeChannel(channel);
@@ -58,9 +62,14 @@ export default function Navbar() {
       </Link>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-        {user ? (
+        
+        {/* 2. THE GHOST FIX: CONDITIONAL RENDERING BASED ON LOADING STATE */}
+        {loading ? (
+          // While session is being checked, show a placeholder to prevent flicker
+          <div style={{ width: '80px' }} /> 
+        ) : user ? (
           <>
-            {/* Desktop Upload - Stays hidden on mobile */}
+            {/* AUTHENTICATED VIEW */}
             <Link href="/articles/upload" className="btn btn--primary btn--sm hide-mobile">
               Upload
             </Link>
@@ -79,19 +88,6 @@ export default function Navbar() {
 
               {menuOpen && (
                 <div className="dropdown-menu">
-                  <div style={{ padding: 'var(--space-3) var(--space-4)', borderBottom: '1px solid var(--color-border-subtle)', marginBottom: 'var(--space-1)' }}>
-                    <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', color: 'var(--color-text-primary)', marginBottom: '2px' }}>{displayName}</p>
-                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>@{profile?.username}</p>
-                  </div>
-
-                  {/* MOBILE-ONLY UPLOAD LINK */}
-                  <div className="show-only-mobile">
-                    <DropdownItem href="/articles/upload" onClick={() => setMenuOpen(false)}>
-                      <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>+ Upload Article</span>
-                    </DropdownItem>
-                    <div style={{ height: '1px', background: 'var(--color-border-subtle)', margin: 'var(--space-1) 0' }} />
-                  </div>
-
                   <DropdownItem href={`/profile/${profile?.username}`} onClick={() => setMenuOpen(false)}>My Profile</DropdownItem>
                   <DropdownItem href="/profile/edit" onClick={() => setMenuOpen(false)}>Settings</DropdownItem>
                   <div style={{ height: '1px', background: 'var(--color-border-subtle)', margin: 'var(--space-1) 0' }} />
@@ -102,6 +98,7 @@ export default function Navbar() {
           </>
         ) : (
           <>
+            {/* GUEST VIEW */}
             <Link href="/login" className="btn btn--ghost btn--sm">Log In</Link>
             <Link href="/signup" className="btn btn--primary btn--sm">Sign Up</Link>
           </>
@@ -110,19 +107,13 @@ export default function Navbar() {
 
       <style jsx>{`
         .dropdown-menu {
-          position: absolute; top: calc(100% + var(--space-2)); right: 0; width: 200px;
-          background: var(--color-bg-surface); border: 1px solid var(--color-border-default);
-          border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: var(--space-2) 0;
-          animation: dropdown-in 0.2s ease-out forwards;
+          position: absolute; top: calc(100% + 8px); right: 0; width: 200px;
+          background: var(--color-bg-surface); border: 1px solid var(--color-border-subtle);
+          border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: var(--space-2) 0;
+          z-index: 1001;
         }
-        @keyframes dropdown-in {
-          from { opacity: 0; transform: translateY(-6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .show-only-mobile { display: none; }
         @media (max-width: 480px) {
           .hide-mobile { display: none; }
-          .show-only-mobile { display: block; }
         }
       `}</style>
     </nav>
@@ -131,7 +122,11 @@ export default function Navbar() {
 
 function DropdownItem({ href, onClick, children }) {
   return (
-    <Link href={href} onClick={onClick} style={{ display: 'block', padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', textDecoration: 'none' }}>
+    <Link
+      href={href}
+      onClick={onClick}
+      style={{ display: 'block', padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--color-text-primary)', textDecoration: 'none' }}
+    >
       {children}
     </Link>
   );

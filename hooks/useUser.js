@@ -52,25 +52,42 @@ export function UserProvider({ children }) {
   }, [router]);
 
   // Auth listener logic from your original version
+  // Auth listener logic
   useEffect(() => {
+    // 1. Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
-      fetchProfile(currentUser?.id).finally(() => setLoading(false));
+      
+      if (currentUser) {
+        fetchProfile(currentUser.id);
+      }
+      // Unfreeze the UI immediately
+      setLoading(false); 
     });
 
+    // 2. Listen for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
-        await fetchProfile(currentUser?.id);
-        setLoading(false);
+        
+        if (currentUser) {
+          // We call this but we DON'T 'await' it here 
+          // to prevent the loading state from getting stuck
+          fetchProfile(currentUser.id);
+        } else {
+          setProfile(null);
+        }
+        
+        // Always unfreeze the UI
+        setLoading(false); 
       }
     );
 
     return () => subscription.unsubscribe();
   }, [fetchProfile]);
-
+  
   return (
     <UserContext.Provider value={{ user, profile, loading, signOut, refreshProfile }}>
       {children}
